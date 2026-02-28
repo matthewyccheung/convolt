@@ -1,0 +1,11 @@
+Metadata-Version: 2.4
+Name: convolt
+Version: 0.1.0
+Summary: ConVOLT: conformal volumetry for template-based segmentation via registration.
+Requires-Python: >=3.9
+Requires-Dist: numpy>=1.22
+Requires-Dist: scipy>=1.8
+Requires-Dist: pandas>=1.5
+Requires-Dist: matplotlib>=3.6
+Requires-Dist: scikit-image>=0.20
+Requires-Dist: tqdm>=4.64

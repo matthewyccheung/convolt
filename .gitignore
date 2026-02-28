@@ -1,0 +1,28 @@
+.venv/
+venv/
+.python-version
+
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local outputs (generated)
+uq_results/
+
+# Common large artifacts (keep data outside the repo)
+*.nii
+*.nii.gz
+*.mha
+*.mhd
+*.npz
+*.npy
+
+# OS/editor
+.DS_Store
+.idea/
+.vscode/

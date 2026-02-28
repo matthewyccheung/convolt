@@ -1,0 +1,18 @@
+numpy>=1.22
+scipy>=1.8
+pandas>=1.5
+matplotlib>=3.6
+scikit-image>=0.20
+tqdm>=4.64
+
+# Optional GPU registration backend (VoxelMorph-style, PyTorch).
+# Install a CUDA-enabled torch build if you want GPU acceleration.
+torch>=2.1
+
+# Optional classical registration backends (Python-packaged).
+# Used by --method sitk_diffeomorphic_demons and --method sitk_bspline.
+SimpleITK>=2.2
+
+# Optional classical registration backend (Python-packaged): Elastix via ITK.
+# Used by --method itk_elastix_bspline.
+itk-elastix

@@ -1,0 +1,4 @@
+[console_scripts]
+convolt-acdc = reg.acdc_cli:main
+convolt-register = reg.cli_unified:main
+convolt-uq = reg.uq.cli:main
