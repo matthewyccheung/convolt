@@ -21,6 +21,34 @@ ${CONVOLT_DATA_ROOT:-/scratch/yc130/Registration}/NLST/
   NLST_dataset.json
 ```
 
+## Adding a new dataset
+
+This repo currently has dataset-specific presets for `nlst`, `lungct`, `acdc`, and `oasis`. To add your own dataset:
+
+1) Put your dataset under `${CONVOLT_DATA_ROOT}` (recommended) or pass `--dataset_dir /path/to/DATASET` when running `python -m reg register ...`.
+2) Ensure it matches one of the supported on-disk schemas:
+   - **Intra-patient paired registration (NLST/LungCT-style)**: nnUNet-like folders (e.g. `imagesTr/`, `masksTr/`) plus a single `*_dataset.json` containing paired entries (see `reg/dataset.py:load_pairs` for the expected keys).
+   - **Inter-patient atlas segmentation (Learn2Reg-style)**: nnUNet-like `imagesTr/`, `labelsTr/`, `imagesTs/` plus `*_dataset.json` (see `reg/learn2reg_dataset.py`).
+3) Register the dataset name in the code:
+   - Add it to the `--dataset` `choices=[...]` lists in `reg/cli_unified.py` and `reg/uq/cli.py`.
+   - Add a mapping in `reg/paths.py:default_dataset_dir` (so defaults work with `CONVOLT_DATA_ROOT`).
+   - If your dataset needs custom loading or targets, add a small loader (e.g. `reg/my_dataset.py`) and call it from `reg/cli_unified.py` (similar to ACDC).
+4) Make sure your registration run writes the standard outputs (`summary.csv` and `pairs/*/artifacts.npz`) under a new `results_dir` so UQ can load features (see `docs/registration.md`).
+
+### Running a new dataset
+After implementing the dataset hook-up above, run:
+```bash
+# Registration
+python -m reg register --dataset <name> --method demons --split training
+
+# UQ (global + optional regional guarantees)
+python -m reg.uq.cli --dataset <name> --method demons --alpha 0.1 --n_repeats 50
+```
+If you added radial-shell regional guarantees (lung-like masks), include:
+```bash
+python -m reg.uq.cli --dataset <name> --method demons --alpha 0.1 --n_repeats 50 --region_defs radial --radial_shells 5 --region_scores q90,max,mean
+```
+
 ## Install
 ```bash
 python -m venv .venv && source .venv/bin/activate
@@ -107,11 +135,4 @@ sh scripts/run_registration_all.sh
 sh scripts/run_uq_all_outputs.sh
 python scripts/combine_uq_tables.py --uq_root "${CONVOLT_UQ_ROOT:-uq_results}" --out_dir uq_results/_tables
 python scripts/make_paper_figures.py --datasets lungct,nlst,oasis --backends demons,voxelmorph
-```
-
-## Renaming the repo folder
-
-If your local folder is currently named `compass_reg/` and you want it to be `convolt/`, you can rename it on your machine (outside Python):
-```bash
-mv compass_reg convolt
 ```
