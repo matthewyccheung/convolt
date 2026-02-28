@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # ConVOLT: conformal volumetry for registration-based segmentation
 
 This repo runs 3D deformable image registration (multiple backends) and quantifies uncertainty on downstream volume metrics using split conformal prediction baselines, conformalized quantile regression (CQR), and **ConVOLT** (scale-CP).
@@ -115,3 +116,7 @@ If your local folder is currently named `compass_reg/` and you want it to be `co
 ```bash
 mv compass_reg convolt
 ```
+=======
+# convolt
+Efficient Conformal Volumetry for Template-Based Segmentation
+>>>>>>> 5ad2c1c49421a5ab8df30b37bd58db5a0b7267f2
