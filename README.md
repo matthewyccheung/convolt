@@ -1,4 +1,6 @@
-# ConVOLT: conformal volumetry for registration-based segmentation
+# Efficient Conformal Volumetry for Template-Based-Segmentation
+
+![Overview](docs/overview.png)
 
 This repo runs 3D deformable image registration (multiple backends) and quantifies uncertainty on downstream volume metrics using split conformal prediction baselines, conformalized quantile regression (CQR), and **ConVOLT** (scale-CP).
 
@@ -12,7 +14,7 @@ Step-by-step docs live under `docs/` (start with `docs/quickstart.md`).
 ## Dataset layout
 Expected on disk (your example):
 ```
-/scratch/yc130/Registration/NLST/
+${CONVOLT_DATA_ROOT:-/scratch/yc130/Registration}/NLST/
   imagesTr/
   masksTr/
   keypointsTr/
@@ -32,7 +34,7 @@ pip install -e .
 
 ## Configure paths (recommended)
 
-Defaults are hard-coded for the original author’s environment under `/scratch/yc130/...`. For portability, set:
+If you do not set any paths, defaults fall back to the original author’s environment under `/scratch/yc130/...`. For portability, set:
 ```bash
 export CONVOLT_DATA_ROOT=/path/to/Registration
 export CONVOLT_RESULTS_ROOT=/path/to/Registration/outputs
@@ -81,9 +83,7 @@ Learn2Reg inter-patient datasets (atlas-based segmentation via registration) def
 
 ## Learn2Reg inter-patient datasets (atlas-based segmentation)
 Datasets expected at:
-- `/scratch/yc130/Registration/HippocampusMR`
-- `/scratch/yc130/Registration/OASIS`
-- `/scratch/yc130/Registration/AbdomenCTCT`
+- `${CONVOLT_DATA_ROOT:-/scratch/yc130/Registration}/OASIS`
 
 Example (multi-atlas, 5 atlases):
 ```bash

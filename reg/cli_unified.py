@@ -25,7 +25,7 @@ def _parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     reg = sub.add_parser("register", help="Run registration and save figures/artifacts/summary.csv")
     reg.add_argument(
         "--dataset",
-        choices=["nlst", "lungct", "acdc", "hippocampusmr", "oasis", "abdomenctct"],
+        choices=["nlst", "lungct", "acdc", "oasis"],
         required=True,
     )
     reg.add_argument(
@@ -39,7 +39,7 @@ def _parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
         "--results_dir",
         type=Path,
         default=None,
-        help="Override results directory (default: /scratch/yc130/Registration/outputs/{dataset}_{method}[_{atlas_tag}]).",
+        help="Override results directory (default: ${CONVOLT_RESULTS_ROOT}/{dataset}_{method}[_{atlas_tag}]).",
     )
     reg.add_argument("--max_pairs", type=int, default=0)
     reg.add_argument("--patient_id", action="append", default=[])
@@ -91,7 +91,7 @@ def _build_demons_params(args: argparse.Namespace, *, dataset: str) -> DemonsPar
     ct_lo, ct_hi = (float(x) for x in str(args.intensity_ct_clip).split(","))
     p_lo, p_hi = (float(x) for x in str(args.intensity_pct).split(","))
     if args.intensity_norm is None:
-        intensity_norm = "ct_hu" if dataset in {"nlst", "lungct", "abdomenctct"} else "percentile"
+        intensity_norm = "ct_hu" if dataset in {"nlst", "lungct"} else "percentile"
     else:
         intensity_norm = str(args.intensity_norm)
     return DemonsParams(
@@ -114,7 +114,7 @@ def main(argv: Optional[List[str]] = None) -> None:
     dataset = str(args.dataset).lower()
     method = str(args.method).lower()
 
-    is_learn2reg = dataset in {"hippocampusmr", "oasis", "abdomenctct"}
+    is_learn2reg = dataset in {"oasis"}
     atlas_spec = None
     atlas_ids_cli = tuple(s.strip() for s in str(args.atlas_ids).split(",") if s.strip()) if is_learn2reg else tuple()
     atlas_tag_str = ""
@@ -240,11 +240,11 @@ def main(argv: Optional[List[str]] = None) -> None:
         p_lo, p_hi = (float(x) for x in str(args.vm_pct).split(","))
         # Dataset-specific defaults.
         if args.vm_norm is None:
-            vm_norm = "ct_hu" if dataset in {"nlst", "lungct", "abdomenctct"} else "percentile"
+            vm_norm = "ct_hu" if dataset in {"nlst", "lungct"} else "percentile"
         else:
             vm_norm = str(args.vm_norm)
         if args.vm_sim is None:
-            vm_sim = "mse" if dataset in {"nlst", "lungct", "abdomenctct"} else "ncc"
+            vm_sim = "mse" if dataset in {"nlst", "lungct"} else "ncc"
         else:
             vm_sim = str(args.vm_sim)
 
@@ -403,7 +403,7 @@ def main(argv: Optional[List[str]] = None) -> None:
                             arr = np.asarray(im, dtype=np.float32)
                             # For some MR tasks, background can be small non-zero noise, so (im!=0) becomes all-ones
                             # and provides no useful masking. Use a simple percentile-based foreground mask instead.
-                            if dataset in {"hippocampusmr"}:
+                            if dataset in {"oasis"}:
                                 p5 = float(np.percentile(arr, 5.0))
                                 p95 = float(np.percentile(arr, 95.0))
                                 thr = p5 + 0.10 * (p95 - p5)

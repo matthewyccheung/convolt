@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import re
 from pathlib import Path
 
@@ -55,12 +56,13 @@ def _pick_best_run(runs: list[str], *, backend: str) -> str:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="Build an interpretability table from feature correlations and SCP→ConVOLT efficiency gains.")
-    ap.add_argument("--tables_dir", type=Path, default=Path("uq_results") / "_tables")
-    ap.add_argument("--uq_root", type=Path, default=Path("uq_results"))
+    uq_root_default = Path(os.environ.get("CONVOLT_UQ_ROOT", "uq_results"))
+    ap.add_argument("--tables_dir", type=Path, default=uq_root_default / "_tables")
+    ap.add_argument("--uq_root", type=Path, default=uq_root_default)
     ap.add_argument("--datasets", type=str, default="", help="Optional comma-separated allowlist (e.g., nlst,lungct,oasis).")
     ap.add_argument("--backends", type=str, default="demons,voxelmorph")
     ap.add_argument("--topk_features", type=int, default=3)
-    ap.add_argument("--out_csv", type=Path, default=Path("uq_results") / "_tables" / "interpretability_table.csv")
+    ap.add_argument("--out_csv", type=Path, default=uq_root_default / "_tables" / "interpretability_table.csv")
     args = ap.parse_args()
 
     allow = {d.strip().lower() for d in str(args.datasets).split(",") if d.strip()}

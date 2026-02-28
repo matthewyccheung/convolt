@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import random
 import sys
 from dataclasses import dataclass
@@ -318,8 +319,8 @@ def _intersection_case_ids(groups: list[list[SamplePaths]]) -> list[str]:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="Make registration sample visualizations (fixed/moving/disp/labels).")
-    ap.add_argument("--results_root", type=Path, default=Path("/scratch/yc130/Registration/outputs"))
-    ap.add_argument("--learn2reg_root", type=Path, default=Path("/scratch/yc130/Registration"))
+    ap.add_argument("--results_root", type=Path, default=Path(os.environ.get("CONVOLT_RESULTS_ROOT", "/scratch/yc130/Registration/outputs")))
+    ap.add_argument("--learn2reg_root", type=Path, default=Path(os.environ.get("CONVOLT_DATA_ROOT", "/scratch/yc130/Registration")))
     ap.add_argument("--datasets", type=str, default="lungct,nlst,oasis")
     ap.add_argument("--backends", type=str, default="demons,voxelmorph")
     ap.add_argument("--oasis_voxelmorph_mode", type=str, default="supervised", choices=["unsupervised", "supervised", "hybrid"])

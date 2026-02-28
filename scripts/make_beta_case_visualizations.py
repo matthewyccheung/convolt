@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import math
+import os
 import random
 import sys
 from dataclasses import dataclass
@@ -393,7 +394,7 @@ def main() -> None:
     ap = argparse.ArgumentParser(description="Make large-β vs small-β case visualizations for ConVOLT(scale-CP).")
     ap.add_argument("--tables_dir", type=Path, default=Path("uq_results") / "_tables")
     ap.add_argument("--uq_root", type=Path, default=Path("uq_results"))
-    ap.add_argument("--results_root", type=Path, default=Path("/scratch/yc130/Registration/outputs"))
+    ap.add_argument("--results_root", type=Path, default=Path(os.environ.get("CONVOLT_RESULTS_ROOT", "/scratch/yc130/Registration/outputs")))
     ap.add_argument("--datasets", type=str, default="lungct,nlst,oasis")
     ap.add_argument("--backends", type=str, default="demons,voxelmorph")
     ap.add_argument("--alpha", type=float, default=0.1)

@@ -12,7 +12,7 @@ convolt-register register ...
 
 ## Common flags
 
-- `--dataset {nlst,lungct,acdc,hippocampusmr,oasis,abdomenctct}`
+- `--dataset {nlst,lungct,acdc,oasis}`
 - `--method {demons,voxelmorph,sitk_diffeomorphic_demons,sitk_bspline,itk_elastix_bspline}`
 - `--dataset_dir PATH` override input dataset location
 - `--results_dir PATH` override output folder
@@ -38,4 +38,3 @@ Each `results_dir` contains:
 
 Learn2Reg training (labeled) runs also include:
 - `label_volumes.csv`: per-label volumes for `--uq_target volume_label`.
-

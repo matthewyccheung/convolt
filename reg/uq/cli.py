@@ -31,7 +31,7 @@ def _parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Conformal prediction UQ for volume targets + ConVOLT.")
     p.add_argument(
         "--dataset",
-        choices=["nlst", "lungct", "acdc", "hippocampusmr", "oasis", "abdomenctct"],
+        choices=["nlst", "lungct", "acdc", "oasis"],
         default=None,
         help="If set with --method, uses standardized defaults for results/out dirs.",
     )
@@ -1845,7 +1845,7 @@ def main(argv: Optional[List[str]] = None) -> None:
     # Standardized defaults (dataset/method) while preserving explicit overrides.
     dataset = str(args.dataset).lower() if args.dataset is not None else None
     method = str(args.method).lower() if args.method is not None else None
-    is_learn2reg = dataset in {"hippocampusmr", "oasis", "abdomenctct"} if dataset is not None else False
+    is_learn2reg = dataset in {"oasis"} if dataset is not None else False
 
     # Dataset-specific split defaults (only if user did not provide any explicit sizes).
     # LungCT is very small (n=30), so fixed sizes avoid accidental empty splits.
@@ -1916,7 +1916,7 @@ def main(argv: Optional[List[str]] = None) -> None:
         if not is_learn2reg:
             raise ValueError(
                 f"--uq_target {uq_target} is only supported for Learn2Reg inter-patient datasets "
-                f"(hippocampusmr/oasis/abdomenctct). For dataset={dataset}, use --uq_target delta_volume "
+                f"(oasis). For dataset={dataset}, use --uq_target delta_volume "
                 "or omit --uq_target to use the dataset default."
             )
         run_volume_suite = True

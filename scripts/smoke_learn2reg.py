@@ -18,7 +18,7 @@ def _assert_exists(path: Path) -> None:
 def main() -> None:
     py = sys.executable
 
-    datasets = ["hippocampusmr", "oasis", "abdomenctct"]
+    datasets = ["oasis"]
     for d in datasets:
         results_dir = Path("/tmp") / f"smoke_{d}_demons_atlas-single"
         uq_dir = Path("/tmp") / f"smoke_{d}_demons_atlas-single_uq"

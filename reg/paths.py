@@ -62,10 +62,6 @@ def default_dataset_dir(dataset: str) -> Path:
         return data_root / "LungCT"
     if dataset == "acdc":
         return data_root / "ACDC" / "database"
-    if dataset == "hippocampusmr":
-        return data_root / "HippocampusMR"
     if dataset == "oasis":
         return data_root / "OASIS"
-    if dataset == "abdomenctct":
-        return data_root / "AbdomenCTCT"
-    raise ValueError("dataset must be one of: nlst, lungct, acdc, hippocampusmr, oasis, abdomenctct")
+    raise ValueError("dataset must be one of: nlst, lungct, acdc, oasis")

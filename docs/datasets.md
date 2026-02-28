@@ -12,9 +12,7 @@ These datasets are expected to be organized nnUNet-style (e.g. `imagesTr/`, `mas
 
 ## Inter-patient Learn2Reg (atlas-based segmentation)
 
-- `hippocampusmr` (MR T1w → MR T1w)
 - `oasis` (MR T1w → MR T1w; labels missing for the official test set)
-- `abdomenctct` (CT → CT; labels missing for the official test set)
 
 These datasets are also expected nnUNet-style with `imagesTr/`, `labelsTr/`, `imagesTs/` and an accompanying `*_dataset.json`.
 
@@ -26,4 +24,3 @@ export CONVOLT_DATA_ROOT=/path/to/Registration
 ```
 
 Defaults (if unset) match the author’s environment under `/scratch/yc130/Registration`.
-

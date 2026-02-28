@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
@@ -195,7 +196,7 @@ def main() -> None:
     ap.add_argument("--dataset", type=str, default="oasis")
     ap.add_argument("--atlas_tag", type=str, default="atlas-multi5")
     ap.add_argument("--voxelmorph_mode", type=str, default="unsupervised", choices=["unsupervised", "supervised", "hybrid"])
-    ap.add_argument("--results_root", type=Path, default=Path("/scratch/yc130/Registration/outputs"))
+    ap.add_argument("--results_root", type=Path, default=Path(os.environ.get("CONVOLT_RESULTS_ROOT", "/scratch/yc130/Registration/outputs")))
     ap.add_argument("--uq_root", type=Path, default=Path("uq_results"))
     ap.add_argument("--baseline_method", type=str, default="ConVOLT(scale-CP)", help="Baseline method name in cp_summary.csv.")
     ap.add_argument("--compare_method", type=str, default="CQR", help="Comparison method name in cp_summary.csv.")

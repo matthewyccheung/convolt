@@ -1,22 +1,21 @@
 #!/bin/sh
 set -eu
 
-# Learn2Reg (inter-patient) Demons runs: atlas-based segmentation via classical registration.
+# Learn2Reg (inter-patient) Demons runs (OASIS): atlas-based segmentation via classical registration.
 #
 # Produces outputs under:
-#   /scratch/yc130/Registration/outputs/{dataset}_demons_{atlas_tag}
+#   ${CONVOLT_RESULTS_ROOT:-/scratch/yc130/Registration/outputs}/oasis_demons_{atlas_tag}
 #
 # Usage:
-#   sh scripts/run_learn2reg_demons.sh abdomenctct
-#   sh scripts/run_learn2reg_demons.sh oasis
-#   sh scripts/run_learn2reg_demons.sh hippocampusmr
+#   sh scripts/run_learn2reg_demons.sh
 #
 # Optional env vars:
 #   ATLAS_MODE=multi|single|average   (default: multi)
 #   ATLAS_N=5                        (default: 5, for multi/average)
 #   ATLAS_SEED=0                     (default: 0)
 
-DATASET="${1:-abdomenctct}"          # hippocampusmr|oasis|abdomenctct
+DATASET="oasis"
+OUTPUTS_ROOT="${OUTPUTS_ROOT:-${CONVOLT_RESULTS_ROOT:-/scratch/yc130/Registration/outputs}}"
 
 ATLAS_MODE="${ATLAS_MODE:-multi}"
 ATLAS_N="${ATLAS_N:-5}"
@@ -32,7 +31,7 @@ case "${ATLAS_MODE}" in
     ;;
 esac
 
-RESULTS_DIR="/scratch/yc130/Registration/outputs/${DATASET}_demons_${ATLAS_TAG}"
+RESULTS_DIR="${OUTPUTS_ROOT}/${DATASET}_demons_${ATLAS_TAG}"
 
 echo "== Train (labeled targets; excludes atlas subjects) =="
 python -m reg register \

@@ -21,9 +21,6 @@ set -eu
 #   N_TRAIN_LUNGCT=10
 #   N_CALIB_LUNGCT=15
 #   N_TEST_LUNGCT=5
-#   N_TRAIN_ABDOMENCTCT= (optional override; requires enough held-out cases)
-#   N_CALIB_ABDOMENCTCT=
-#   N_TEST_ABDOMENCTCT=
 #   ONLY_DATASET=...   (e.g. oasis)
 #   ONLY_METHOD=...    (e.g. voxelmorph)
 #
@@ -46,9 +43,6 @@ REGION_BETA_MODES="${REGION_BETA_MODES:-both}"
 N_TRAIN_LUNGCT="${N_TRAIN_LUNGCT:-10}"
 N_CALIB_LUNGCT="${N_CALIB_LUNGCT:-15}"
 N_TEST_LUNGCT="${N_TEST_LUNGCT:-5}"
-N_TRAIN_ABDOMENCTCT="${N_TRAIN_ABDOMENCTCT:-}"
-N_CALIB_ABDOMENCTCT="${N_CALIB_ABDOMENCTCT:-}"
-N_TEST_ABDOMENCTCT="${N_TEST_ABDOMENCTCT:-}"
 ONLY_DATASET="${ONLY_DATASET:-}"
 ONLY_METHOD="${ONLY_METHOD:-}"
 
@@ -177,20 +171,11 @@ for d in "${OUTPUTS_ROOT}"/*; do
     extra="${extra} --scp_local --scp_local_s ${SCP_LOCAL_S} --scp_knn_k ${SCP_LOCAL_K}"
   fi
   case "${dataset}" in
-    hippocampusmr|oasis|abdomenctct)
+    oasis)
       # If atlas/vm_train excluded all labeled cases, UQ cannot run.
       remain="$(learn2reg_remaining "$d")"
       total="$(learn2reg_total "$d")"
-      # If user configured explicit split sizes (abdomenctct), ensure we have enough held-out cases.
       required_min=10
-      use_abd_override=0
-      if [ "${dataset}" = "abdomenctct" ] && [ -n "${N_TRAIN_ABDOMENCTCT}" ] && [ -n "${N_CALIB_ABDOMENCTCT}" ] && [ -n "${N_TEST_ABDOMENCTCT}" ]; then
-        nt="${N_TRAIN_ABDOMENCTCT}"
-        nc="${N_CALIB_ABDOMENCTCT}"
-        nte="${N_TEST_ABDOMENCTCT}"
-        required_min=$((nt + nc + nte))
-        use_abd_override=1
-      fi
       if [ "${remain}" -lt "${required_min}" ]; then
         echo "SKIP (not enough evaluable labeled cases after excluding atlas/vm_train ids): ${name}"
         echo "  total_labeled=${total} remaining_for_uq=${remain} required_min=${required_min}"
@@ -222,9 +207,6 @@ for d in "${OUTPUTS_ROOT}"/*; do
           ;;
       esac
 
-      if [ "${use_abd_override}" = "1" ]; then
-        extra="${extra} --n_train ${N_TRAIN_ABDOMENCTCT} --n_calib ${N_CALIB_ABDOMENCTCT} --n_test ${N_TEST_ABDOMENCTCT}"
-      fi
       ;;
     nlst)
       # global + (optional) regional (radial) in one run

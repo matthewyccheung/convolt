@@ -108,32 +108,6 @@ def _center_of_mass_zyx(mask_zyx: np.ndarray) -> np.ndarray:
     return idx.mean(axis=0).astype(np.float32)
 
 
-def _pca_basis_zyx(mask_zyx: np.ndarray) -> np.ndarray | None:
-    """
-    Returns an orthonormal 3x3 basis (columns) from PCA of voxel coordinates (z,y,x) inside mask.
-    If the mask is too small/degenerate, returns None.
-    """
-    idx = np.argwhere(np.asarray(mask_zyx) > 0)
-    if idx.shape[0] < 256:
-        return None
-    pts = idx.astype(np.float32)
-    mu = pts.mean(axis=0, keepdims=True)
-    pts = pts - mu
-    # Covariance in voxel units
-    cov = (pts.T @ pts) / max(float(pts.shape[0] - 1), 1.0)
-    try:
-        w, v = np.linalg.eigh(cov.astype(np.float64))
-    except Exception:
-        return None
-    # Sort descending eigenvalues (principal axes)
-    order = np.argsort(w)[::-1]
-    v = v[:, order].astype(np.float32, copy=False)
-    # Ensure right-handed basis
-    if float(np.linalg.det(v)) < 0:
-        v[:, -1] *= -1.0
-    return v
-
-
 def _prealign_translation(
     *,
     fixed_img_zyx: np.ndarray,
@@ -153,53 +127,6 @@ def _prealign_translation(
     mov_img = ndimage.shift(moving_img_zyx, shift=shift, order=1, mode="nearest")
     mov_lbl = ndimage.shift(moving_lbl_zyx, shift=shift, order=0, mode="constant", cval=0.0)
     return mov_img.astype(np.float32, copy=False), mov_lbl.astype(np.uint16, copy=False)
-
-
-def _prealign_rigid_pca(
-    *,
-    fixed_img_zyx: np.ndarray,
-    moving_img_zyx: np.ndarray,
-    moving_lbl_zyx: np.ndarray,
-) -> tuple[np.ndarray, np.ndarray]:
-    """
-    Rigid (rotation+translation) prealignment using PCA bases of a percentile-foreground mask.
-    This is a lightweight alternative to a full affine optimizer and avoids external deps.
-    """
-    fixed_fg = _foreground_mask_percentile(fixed_img_zyx)
-    moving_fg = _foreground_mask_percentile(moving_img_zyx)
-    bf = _pca_basis_zyx(fixed_fg)
-    bm = _pca_basis_zyx(moving_fg)
-    if bf is None or bm is None:
-        return _prealign_translation(fixed_img_zyx=fixed_img_zyx, moving_img_zyx=moving_img_zyx, moving_lbl_zyx=moving_lbl_zyx)
-
-    # Rotation mapping moving coords -> fixed coords in (z,y,x) voxel units.
-    R = (bf @ bm.T).astype(np.float32, copy=False)
-    cf = _center_of_mass_zyx(fixed_fg)
-    cm = _center_of_mass_zyx(moving_fg)
-    t = (cf - (R @ cm)).astype(np.float32, copy=False)
-
-    # ndimage.affine_transform maps output coords -> input coords: x_in = M x_out + b
-    # We want x_fixed = R x_moving + t  =>  x_moving = R^T (x_fixed - t)
-    M = R.T.astype(np.float32, copy=False)
-    b = (-M @ t).astype(np.float32, copy=False)
-
-    mov_img = ndimage.affine_transform(
-        moving_img_zyx.astype(np.float32, copy=False),
-        matrix=M,
-        offset=b,
-        order=1,
-        mode="nearest",
-        cval=float(np.min(moving_img_zyx)),
-    )
-    mov_lbl = ndimage.affine_transform(
-        moving_lbl_zyx.astype(np.float32, copy=False),
-        matrix=M,
-        offset=b,
-        order=0,
-        mode="constant",
-        cval=0.0,
-    )
-    return mov_img.astype(np.float32, copy=False), np.asarray(np.rint(mov_lbl), dtype=np.uint16)
 
 
 def _register_one_atlas(
@@ -272,24 +199,16 @@ def _register_one_atlas(
             raise ValueError("voxelmorph backend requires vxm_model and vxm_cfg")
         from .vxm import infer_flow_and_warp, warp_image_bilinear, warp_labels_nearest
 
-        # For small MR structures (e.g. hippocampus), VM can fail if atlas and target are translated far apart.
-        # Do a lightweight rigid prealignment (PCA-based) to improve initial overlap (no GT leakage).
+        # VM can fail if atlas and target are translated far apart. Do a lightweight translation-only
+        # prealignment to improve initial overlap (no GT leakage).
         moving_img_infer = moving_img_rs
         moving_lbl_infer = moving_lbl_rs
         try:
-            if str(params.intensity_norm).lower() == "percentile" and fixed_img_zyx.shape == (64, 64, 64):
-                # HippocampusMR default: use rigid PCA prealignment.
-                moving_img_infer, moving_lbl_infer = _prealign_rigid_pca(
-                    fixed_img_zyx=fixed_img_zyx,
-                    moving_img_zyx=moving_img_rs,
-                    moving_lbl_zyx=moving_lbl_rs,
-                )
-            else:
-                moving_img_infer, moving_lbl_infer = _prealign_translation(
-                    fixed_img_zyx=fixed_img_zyx,
-                    moving_img_zyx=moving_img_rs,
-                    moving_lbl_zyx=moving_lbl_rs,
-                )
+            moving_img_infer, moving_lbl_infer = _prealign_translation(
+                fixed_img_zyx=fixed_img_zyx,
+                moving_img_zyx=moving_img_rs,
+                moving_lbl_zyx=moving_lbl_rs,
+            )
         except Exception:
             pass
 

@@ -14,7 +14,16 @@ Install the package in editable mode so the `convolt-*` commands are available:
 pip install -e .
 ```
 
-## 2) Optional registration backends
+## 2) Configure data/output paths (recommended)
+
+Defaults fall back to the original author’s environment under `/scratch/yc130/...`. For portability, set:
+```bash
+export CONVOLT_DATA_ROOT=/path/to/Registration
+export CONVOLT_RESULTS_ROOT=/path/to/Registration/outputs
+export CONVOLT_UQ_ROOT=/path/to/convolt/uq_results
+```
+
+## 3) Optional registration backends
 
 The core code supports multiple backends. Some are optional:
 
@@ -25,4 +34,3 @@ The core code supports multiple backends. Some are optional:
 - `itk_elastix_bspline`: requires `itk-elastix` (Python bindings for elastix).
 
 The provided `requirements.txt` includes these as optional dependencies; you can comment them out if you only need the in-repo backends.
-

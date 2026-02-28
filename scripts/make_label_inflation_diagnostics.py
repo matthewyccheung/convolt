@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -358,12 +359,12 @@ def main() -> None:
     ap.add_argument("--dataset", type=str, default="oasis")
     ap.add_argument("--atlas_tag", type=str, default="atlas-multi5")
     ap.add_argument("--voxelmorph_mode", type=str, default="unsupervised", choices=["unsupervised", "supervised", "hybrid"])
-    ap.add_argument("--results_root", type=Path, default=Path("/scratch/yc130/Registration/outputs"))
-    ap.add_argument("--uq_root", type=Path, default=Path("uq_results"))
+    ap.add_argument("--results_root", type=Path, default=Path(os.environ.get("CONVOLT_RESULTS_ROOT", "/scratch/yc130/Registration/outputs")))
+    ap.add_argument("--uq_root", type=Path, default=Path(os.environ.get("CONVOLT_UQ_ROOT", "uq_results")))
     ap.add_argument("--method", type=str, default="CQR(volonly)")
     ap.add_argument("--baseline", type=str, default="ConVOLT(scale-CP)")
     ap.add_argument("--vol_thr", type=float, default=1e-3, help="Volume threshold (mL) for prevalence V_gt > vol_thr.")
-    ap.add_argument("--out_dir", type=Path, default=Path("uq_results") / "_figures_paper")
+    ap.add_argument("--out_dir", type=Path, default=Path(os.environ.get("CONVOLT_UQ_ROOT", "uq_results")) / "_figures_paper")
     ap.add_argument("--topk_labels", type=int, default=9, help="Top-k labels (by mean GT volume) for heteroscedasticity curve plots.")
     ap.add_argument("--hetero_bins", type=int, default=6, help="Number of quantile bins for heteroscedasticity curves.")
     args = ap.parse_args()
@@ -491,4 +492,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

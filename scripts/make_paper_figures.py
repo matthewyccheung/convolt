@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import re
 import sys
 from pathlib import Path
@@ -60,8 +61,6 @@ def _dataset_title(ds: str) -> str:
         "lungct": "ThoraxCBCT",
         "acdc": "ACDC",
         "oasis": "OASIS",
-        "hippocampusmr": "HippocampusMR",
-        "abdomenctct": "AbdomenCTCT",
     }.get(ds, ds)
 
 
@@ -2336,9 +2335,10 @@ def _feature_importance_stability(
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="Make conference-paper figures from uq_results/_tables outputs.")
-    ap.add_argument("--tables_dir", type=Path, default=Path("uq_results") / "_tables")
-    ap.add_argument("--uq_root", type=Path, default=Path("uq_results"))
-    ap.add_argument("--out_dir", type=Path, default=Path("uq_results") / "_figures_paper")
+    uq_root_default = Path(os.environ.get("CONVOLT_UQ_ROOT", "uq_results"))
+    ap.add_argument("--tables_dir", type=Path, default=uq_root_default / "_tables")
+    ap.add_argument("--uq_root", type=Path, default=uq_root_default)
+    ap.add_argument("--out_dir", type=Path, default=uq_root_default / "_figures_paper")
     ap.add_argument("--datasets", type=str, default="lungct,nlst,oasis", help="Comma-separated dataset list for the 3-panel plots.")
     ap.add_argument(
         "--backends",
@@ -2360,7 +2360,12 @@ def main() -> None:
         default=0,
         help="Top-k features per dataset to include in scatter grid (0 disables; this can be slow on first run).",
     )
-    ap.add_argument("--results_root", type=Path, default=Path("/scratch/yc130/Registration/outputs"), help="Registration outputs root for raw feature/value scatter plots.")
+    ap.add_argument(
+        "--results_root",
+        type=Path,
+        default=Path(os.environ.get("CONVOLT_RESULTS_ROOT", "/scratch/yc130/Registration/outputs")),
+        help="Registration outputs root for raw feature/value scatter plots (default: ${CONVOLT_RESULTS_ROOT}).",
+    )
     ap.add_argument("--oasis_label_topk", type=int, default=0, help="Top-k label IDs to include in OASIS per-label inflation plot (0 disables).")
     ap.add_argument(
         "--oasis_label_cqr_inflation",

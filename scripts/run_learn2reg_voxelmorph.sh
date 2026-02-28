@@ -1,18 +1,19 @@
 #!/bin/sh
 set -eu
 
-# Learn2Reg (inter-patient) VoxelMorph runs: train (on labeled training split) + test inference.
+# Learn2Reg (inter-patient) VoxelMorph runs (OASIS): train (on labeled training split) + test inference.
 # Produces figures under:
-#   /scratch/yc130/Registration/outputs/{dataset}_voxelmorph_{atlas_tag}/figures
+#   ${CONVOLT_RESULTS_ROOT:-/scratch/yc130/Registration/outputs}/oasis_voxelmorph_{train_mode}_{atlas_tag}/figures
 #
 # Usage examples:
-#   scripts/run_learn2reg_voxelmorph.sh hippocampusmr supervised cuda
-#   scripts/run_learn2reg_voxelmorph.sh oasis hybrid cuda
-#   scripts/run_learn2reg_voxelmorph.sh abdomenctct unsupervised cuda
+#   scripts/run_learn2reg_voxelmorph.sh unsupervised cuda
+#   scripts/run_learn2reg_voxelmorph.sh supervised cuda
+#   scripts/run_learn2reg_voxelmorph.sh hybrid cuda
 
-DATASET="${1:-hippocampusmr}"          # hippocampusmr|oasis|abdomenctct
-TRAIN_MODE="${2:-unsupervised}"             # unsupervised|supervised|hybrid
-DEVICE="${3:-cuda}"                   # cpu|cuda|auto
+DATASET="oasis"
+TRAIN_MODE="${1:-unsupervised}"             # unsupervised|supervised|hybrid
+DEVICE="${2:-cuda}"                   # cpu|cuda|auto
+OUTPUTS_ROOT="${OUTPUTS_ROOT:-${CONVOLT_RESULTS_ROOT:-/scratch/yc130/Registration/outputs}}"
 
 ATLAS_MODE="${ATLAS_MODE:-multi}"
 ATLAS_N="${ATLAS_N:-5}"
@@ -28,18 +29,8 @@ case "${ATLAS_MODE}" in
     ;;
 esac
 
-RESULTS_DIR="/scratch/yc130/Registration/outputs/${DATASET}_voxelmorph_${TRAIN_MODE}_${ATLAS_TAG}"
-
-default_vm_train_cases() {
-  case "$1" in
-    abdomenctct) echo 10 ;;
-    hippocampusmr) echo 150 ;;
-    oasis) echo 250 ;;
-    *) echo 200 ;;
-  esac
-}
-
-VM_TRAIN_CASES="${VM_TRAIN_CASES:-$(default_vm_train_cases "${DATASET}")}"
+RESULTS_DIR="${OUTPUTS_ROOT}/${DATASET}_voxelmorph_${TRAIN_MODE}_${ATLAS_TAG}"
+VM_TRAIN_CASES="${VM_TRAIN_CASES:-250}"
 VM_EPOCHS="${VM_EPOCHS:-50}"
 VM_STEPS="${VM_STEPS:-100}"
 VM_SCALE="${VM_SCALE:-2}"
@@ -49,10 +40,6 @@ VM_LR="${VM_LR:-1e-4}"
 # Dataset-aware defaults (can be overridden via env vars).
 VM_SIM="${VM_SIM:-ncc}"
 VM_NCC_WIN="${VM_NCC_WIN:-9}"
-if [ "${DATASET}" = "abdomenctct" ]; then
-  VM_SIM="${VM_SIM:-mse}"
-  VM_SCALE="${VM_SCALE:-2}"
-fi
 
 echo "== Train =="
 python -m reg register \

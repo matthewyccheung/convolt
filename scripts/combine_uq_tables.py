@@ -756,8 +756,11 @@ def _write_split_tables(*, df_long: pd.DataFrame, out_dir: Path, kind: str) -> N
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="Combine per-run UQ summaries into paper-ready tables.")
-    ap.add_argument("--uq_root", type=Path, default=Path("uq_results"), help="Root directory containing per-run UQ outputs.")
-    ap.add_argument("--out_dir", type=Path, default=Path("uq_results") / "_tables", help="Output directory for combined tables.")
+    import os
+
+    uq_root_default = Path(os.environ.get("CONVOLT_UQ_ROOT", "uq_results"))
+    ap.add_argument("--uq_root", type=Path, default=uq_root_default, help="Root directory containing per-run UQ outputs.")
+    ap.add_argument("--out_dir", type=Path, default=uq_root_default / "_tables", help="Output directory for combined tables.")
     ap.add_argument(
         "--voxelmorph_mode",
         choices=["unsupervised", "supervised", "hybrid", "any"],

@@ -3,7 +3,7 @@ set -eu
 
 # One-stop registration runner for:
 #   - Intra-patient: nlst, lungct, acdc
-#   - Learn2Reg inter-patient (atlas-based segmentation via registration): hippocampusmr, oasis, abdomenctct
+#   - Learn2Reg inter-patient (atlas-based segmentation via registration): oasis
 #
 # Runs Demons + VoxelMorph for each dataset and writes to standardized outputs under:
 #   ${CONVOLT_RESULTS_ROOT:-/scratch/yc130/Registration/outputs}/...
@@ -11,7 +11,7 @@ set -eu
 # Usage:
 #   sh scripts/run_registration_all.sh
 #   ONLY_DATASET=lungct sh scripts/run_registration_all.sh
-#   ONLY_DATASET=abdomenctct TRAIN_MODE=supervised DEVICE=cuda sh scripts/run_registration_all.sh
+#   ONLY_DATASET=oasis TRAIN_MODE=supervised DEVICE=cuda sh scripts/run_registration_all.sh
 #
 # Optional env vars:
 #   ONLY_DATASET=...             (run just one dataset)
@@ -37,6 +37,7 @@ set -eu
 ONLY_DATASET="${ONLY_DATASET:-}"
 ONLY_METHOD="${ONLY_METHOD:-}"
 DEVICE="${DEVICE:-cuda}"
+OUTPUTS_ROOT="${OUTPUTS_ROOT:-${CONVOLT_RESULTS_ROOT:-/scratch/yc130/Registration/outputs}}"
 
 ATLAS_MODE="${ATLAS_MODE:-multi}"
 ATLAS_N="${ATLAS_N:-5}"
@@ -69,9 +70,9 @@ run_demons() {
   dataset="$1"
   split="$2"
   echo "== ${dataset} demons (${split}) =="
-  if [ "${dataset}" = "hippocampusmr" ] || [ "${dataset}" = "oasis" ] || [ "${dataset}" = "abdomenctct" ]; then
+  if [ "${dataset}" = "oasis" ]; then
     tag="$(atlas_tag)"
-    results_dir="/scratch/yc130/Registration/outputs/${dataset}_demons_${tag}"
+    results_dir="${OUTPUTS_ROOT}/${dataset}_demons_${tag}"
     python -m reg register \
       --dataset "${dataset}" \
       --method demons \
@@ -92,9 +93,9 @@ run_voxelmorph() {
   dataset="$1"
   split="$2"
   echo "== ${dataset} voxelmorph (${split}) =="
-  if [ "${dataset}" = "hippocampusmr" ] || [ "${dataset}" = "oasis" ] || [ "${dataset}" = "abdomenctct" ]; then
+  if [ "${dataset}" = "oasis" ]; then
     tag="$(atlas_tag)"
-    results_dir="/scratch/yc130/Registration/outputs/${dataset}_voxelmorph_${TRAIN_MODE}_${tag}"
+    results_dir="${OUTPUTS_ROOT}/${dataset}_voxelmorph_${TRAIN_MODE}_${tag}"
     if [ "${split}" = "training" ]; then
       python -m reg register \
         --dataset "${dataset}" \
@@ -174,7 +175,7 @@ run_dataset() {
   done
 }
 
-DATASETS="nlst lungct acdc hippocampusmr oasis abdomenctct"
+DATASETS="nlst lungct acdc oasis"
 for d in ${DATASETS}; do
   if [ -n "${ONLY_DATASET}" ] && [ "${d}" != "${ONLY_DATASET}" ]; then
     continue
@@ -182,4 +183,4 @@ for d in ${DATASETS}; do
   run_dataset "${d}"
 done
 
-echo "== Done. Outputs under /scratch/yc130/Registration/outputs =="
+echo "== Done. Outputs under ${OUTPUTS_ROOT} =="

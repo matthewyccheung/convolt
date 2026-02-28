@@ -4,10 +4,10 @@ set -eu
 # Run UQ for a single registration results folder (must contain summary.csv).
 #
 # Usage:
-#   sh scripts/run_uq_one_output.sh /scratch/yc130/Registration/outputs/oasis_voxelmorph_hybrid_atlas-multi5
+#   sh scripts/run_uq_one_output.sh ${CONVOLT_RESULTS_ROOT:-/scratch/yc130/Registration/outputs}/oasis_voxelmorph_unsupervised_atlas-multi5
 #
 # Optional env vars:
-#   UQ_ROOT=uq_results
+#   UQ_ROOT=${CONVOLT_UQ_ROOT:-uq_results}
 #   ALPHA=0.1
 #   N_REPEATS=50
 #   BETA_MODEL=ridge|none
@@ -18,9 +18,6 @@ set -eu
 #   N_TRAIN_LUNGCT=10
 #   N_CALIB_LUNGCT=15
 #   N_TEST_LUNGCT=5
-#   N_TRAIN_ABDOMENCTCT= (optional override; requires enough held-out cases)
-#   N_CALIB_ABDOMENCTCT=
-#   N_TEST_ABDOMENCTCT=
 
 RESULTS_DIR="${1:-}"
 if [ -z "${RESULTS_DIR}" ]; then
@@ -32,7 +29,7 @@ if [ ! -d "${RESULTS_DIR}" ] || [ ! -f "${RESULTS_DIR}/summary.csv" ]; then
   exit 2
 fi
 
-UQ_ROOT="${UQ_ROOT:-uq_results}"
+UQ_ROOT="${UQ_ROOT:-${CONVOLT_UQ_ROOT:-uq_results}}"
 ALPHA="${ALPHA:-0.1}"
 N_REPEATS="${N_REPEATS:-50}"
 BETA_MODEL="${BETA_MODEL:-ridge}"
@@ -46,9 +43,6 @@ REGION_SCORES="${REGION_SCORES:-q90,max,mean}"
 N_TRAIN_LUNGCT="${N_TRAIN_LUNGCT:-10}"
 N_CALIB_LUNGCT="${N_CALIB_LUNGCT:-15}"
 N_TEST_LUNGCT="${N_TEST_LUNGCT:-5}"
-N_TRAIN_ABDOMENCTCT="${N_TRAIN_ABDOMENCTCT:-}"
-N_CALIB_ABDOMENCTCT="${N_CALIB_ABDOMENCTCT:-}"
-N_TEST_ABDOMENCTCT="${N_TEST_ABDOMENCTCT:-}"
 
 name="$(basename "${RESULTS_DIR}")"
 dataset="$(printf "%s" "${name}" | awk -F_ '{print $1}')"
@@ -128,16 +122,10 @@ if [ "${RUN_LOCAL_SCP}" = "1" ]; then
   extra="${extra} --scp_local --scp_local_s ${SCP_LOCAL_S} --scp_knn_k ${SCP_LOCAL_K}"
 fi
 case "${dataset}" in
-  hippocampusmr|oasis|abdomenctct)
+  oasis)
     remain="$(learn2reg_remaining "${RESULTS_DIR}")"
     total="$(learn2reg_total "${RESULTS_DIR}")"
     required_min=10
-    if [ "${dataset}" = "abdomenctct" ] && { [ -n "${N_TRAIN_ABDOMENCTCT}" ] || [ -n "${N_CALIB_ABDOMENCTCT}" ] || [ -n "${N_TEST_ABDOMENCTCT}" ]; }; then
-      nt="${N_TRAIN_ABDOMENCTCT:-0}"
-      nc="${N_CALIB_ABDOMENCTCT:-0}"
-      nte="${N_TEST_ABDOMENCTCT:-0}"
-      required_min=$((nt + nc + nte))
-    fi
     if [ "${remain}" -lt "${required_min}" ]; then
       echo "SKIP (not enough evaluable labeled cases after excluding atlas/vm_train ids): ${name}" >&2
       echo "total_labeled=${total} remaining_for_uq=${remain} required_min=${required_min}" >&2
@@ -145,9 +133,6 @@ case "${dataset}" in
       exit 0
     fi
     extra="${extra} --uq_target volume_union --uq_topk_labels ${TOPK_LABELS}"
-    if [ "${dataset}" = "abdomenctct" ] && { [ -n "${N_TRAIN_ABDOMENCTCT}" ] || [ -n "${N_CALIB_ABDOMENCTCT}" ] || [ -n "${N_TEST_ABDOMENCTCT}" ]; }; then
-      extra="${extra} --n_train ${N_TRAIN_ABDOMENCTCT:-0} --n_calib ${N_CALIB_ABDOMENCTCT:-0} --n_test ${N_TEST_ABDOMENCTCT:-0}"
-    fi
     ;;
   nlst)
     if [ "${RUN_LUNG_REGIONS}" = "1" ]; then
