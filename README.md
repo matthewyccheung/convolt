@@ -1,5 +1,15 @@
 # Efficient Conformal Volumetry for Template-Based-Segmentation
 
+#### Citation
+```
+@article{cheung2026efficient,
+  title={Efficient Conformal Volumetry for Template-Based Segmentation},
+  author={Cheung, Matt Y and Veeraraghavan, Ashok and Balakrishnan, Guha},
+  journal={arXiv preprint arXiv:2603.00798},
+  year={2026}
+}
+```
+
 ![Overview](docs/overview.png)
 
 This repo runs 3D deformable image registration (multiple backends) and quantifies uncertainty on downstream volume metrics using split conformal prediction baselines, conformalized quantile regression (CQR), and **ConVOLT** (scale-CP).
